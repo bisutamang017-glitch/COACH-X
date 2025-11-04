@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>COACH X – Find Your Mentor</title>
+    <style>
+        /* --- GLOBAL & VAR STYLES (Re-included for standalone view) --- */
+        :root {
+            --bg-main: #0d1117;
+            --bg-chat: #161b22;
+            --accent: #0dcaf0;
+            --text-main: #e6edf3;
+            --text-muted: #8b949e;
+            --border-color: #30363d;
+        }
+
+        * { box-sizing: border-box; }
+        
+        body {
+            margin: 0;
+            font-family: 'Inter', 'Segoe UI', Arial, sans-serif;
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        /* HEADER STYLES (Consistent) */
+        header {
+            background: rgba(22, 27, 34, 0.9);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 25px;
+            flex-shrink: 0;
+        }
+
+        header h1 {
+            font-size: 1.3rem;
+            background: linear-gradient(90deg, #0dcaf0, #0078d7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin: 0;
+        }
+
+        header nav a {
+            color: var(--text-muted);
+            text-decoration: none;
+            margin-left: 20px;
+            transition: color 0.2s;
+            font-size: 0.9rem;
+        }
+
+        header nav a:hover, header nav a.active {
+            color: var(--accent);
+        }
+
+        /* FOOTER STYLES (Consistent) */
+        footer {
+            text-align: center;
+            font-size: 0.8rem;
+            padding: 10px;
+            color: var(--text-muted);
+            border-top: 1px solid var(--border-color);
+            background-color: var(--bg-chat);
+            margin-top: auto;
+            flex-shrink: 0;
+        }
+        
+        /* --- MENTOR SECTION STYLES --- */
+        .mentor-section {
+            flex-grow: 1;
+            padding: 50px 25px;
+            max-width: 1200px;
+            width: 100%;
+            margin: 30px auto;
+        }
+
+        .mentor-section h2 {
+            font-size: 2.5rem;
+            color: var(--text-main);
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .mentor-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+        }
+
+        .mentor-card {
+            background-color: var(--bg-chat);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 25px;
+            text-align: center;
+            transition: box-shadow 0.3s;
+        }
+        
+        .mentor-card:hover {
+            box-shadow: 0 0 15px rgba(13, 202, 240, 0.3);
+        }
+
+        .mentor-card img {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid var(--accent);
+            margin-bottom: 15px;
+        }
+
+        .mentor-card h3 {
+            font-size: 1.5rem;
+            margin: 0 0 5px 0;
+            color: var(--text-main);
+        }
+        
+        .mentor-card p {
+            color: var(--text-muted);
+            margin: 0 0 10px 0;
+        }
+
+        .mentor-card .specialty {
+            display: inline-block;
+            background-color: #0dcaf030;
+            color: var(--accent);
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 0.85rem;
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+
+        .mentor-card .rate {
+            font-size: 1.2rem;
+            color: #48e248; /* Green */
+            font-weight: 700;
+            margin-bottom: 20px;
+        }
+
+        .btn-book {
+            background-color: var(--accent);
+            color: var(--bg-main);
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            width: 100%;
+        }
+
+        .btn-book:hover {
+            background-color: #00b4d8;
+        }
+        
+        /* --- MODAL STYLES (for date/time selection) --- */
+        .modal {
+            display: none; 
+            position: fixed;
+            z-index: 10;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.8);
+            padding-top: 60px;
+        }
+
+        .modal-content {
+            background-color: var(--bg-chat);
+            margin: 5% auto;
+            padding: 30px;
+            border: 1px solid var(--border-color);
+            width: 80%;
+            max-width: 500px;
+            border-radius: 10px;
+            position: relative;
+        }
+
+        .modal-content h3 {
+            color: var(--accent);
+            margin-top: 0;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+
+        .close-btn {
+            color: var(--text-muted);
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
+
+        .close-btn:hover, .close-btn:focus {
+            color: var(--text-main);
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .schedule-list button {
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            border: 1px solid var(--border-color);
+            padding: 10px 15px;
+            margin: 5px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.2s, border-color 0.2s;
+            min-width: 120px;
+        }
+        
+        .schedule-list button:hover {
+            background-color: #1a2330;
+        }
+
+        .schedule-list button.selected {
+            background-color: var(--accent);
+            color: var(--bg-main);
+            border-color: var(--accent);
+            font-weight: bold;
+        }
+
+        #confirmBookingBtn {
+            margin-top: 20px;
+        }
+        
+    </style>
+</head>
+
+<body>
+    <header>
+        <h1>COACH X</h1>
+        <nav>
+            <a href="index.html">Home</a>
+            <a href="about.html">About</a>
+            <a href="mentors.html" class="active">Mentors</a>
+            <a href="features.html">Features</a> 
+            <a href="login.html">Login</a>
+            <a href="WEB_UIKITS.html">Video Call</a>
+            <a href="payment.html">Payment</a>
+        </nav>
+    </header>
+
+    <div class="mentor-section">
+        <h2>Find Your Expert Mentor 🤝</h2>
+        <div class="mentor-grid" id="mentorGrid">
+            </div>
+    </div>
+    
+    <div id="bookingModal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn">&times;</span>
+            <h3 id="modalTitle">Book Session with [Mentor Name]</h3>
+            
+            <p>Select an available date and time below (All times in IST):</p>
+            
+            <div id="scheduleList" class="schedule-list">
+                </div>
+            
+            <button id="confirmBookingBtn" class="btn-book" disabled>
+                Confirm & Go to Payment
+            </button>
+        </div>
+    </div>
+
+    <footer>
+        <p>&copy; 2025 COACH X. All rights reserved.</p>
+        <p>Mentorship powered by creativity & AI ⚡</p>
+    </footer>
+
+    <script>
+        // --- MOCK MENTOR DATA ---
+        const MENTORS_DATA = [
+            {
+                id: 1,
+                name: "Dr. Anya Sharma",
+                title: "Senior AI Strategist",
+                specialty: "Machine Learning & Ethics",
+                rate: "1500",
+                img: "img/mentor-anya.jpg",
+                availability: [
+                    { day: "Today (Nov 4)", time: "3:00 PM" },
+                    { day: "Tomorrow (Nov 5)", time: "10:00 AM" },
+                    { day: "Thursday (Nov 7)", time: "4:00 PM" }
+                ]
+            },
+            {
+                id: 2,
+                name: "Rohan Patel",
+                title: "Lead Backend Developer",
+                specialty: "FastAPI & Python Scalability",
+                rate: "1200",
+                img: "img/mentor-rohan.jpg",
+                availability: [
+                    { day: "Tomorrow (Nov 5)", time: "11:30 AM" },
+                    { day: "Friday (Nov 8)", time: "5:00 PM" },
+                    { day: "Saturday (Nov 9)", time: "10:00 AM" }
+                ]
+            },
+            {
+                id: 3,
+                name: "Meera Singh",
+                title: "UX/UI Designer",
+                specialty: "Figma & User Research",
+                rate: "1000",
+                img: "img/mentor-meera.jpg",
+                availability: [
+                    { day: "Today (Nov 4)", time: "6:00 PM" },
+                    { day: "Wednesday (Nov 6)", time: "2:00 PM" },
+                    { day: "Friday (Nov 8)", time: "11:00 AM" }
+                ]
+            }
+        ];
+        // --- END MOCK DATA ---
+
+
+        // --- DOM ELEMENTS & STATE ---
+        const mentorGrid = document.getElementById('mentorGrid');
+        const modal = document.getElementById('bookingModal');
+        const modalTitle = document.getElementById('modalTitle');
+        const scheduleList = document.getElementById('scheduleList');
+        const confirmBtn = document.getElementById('confirmBookingBtn');
+        const closeBtn = document.querySelector('.close-btn');
+        let selectedSlot = null;
+        let selectedMentor = null;
+
+
+        // --- RENDER FUNCTIONS ---
+        function renderMentorCards() {
+            mentorGrid.innerHTML = MENTORS_DATA.map(mentor => `
+                <div class="mentor-card" data-mentor-id="${mentor.id}">
+                    
+                    <h3>${mentor.name}</h3>
+                    <p>${mentor.title}</p>
+                    <span class="specialty">${mentor.specialty}</span>
+                    <div class="rate">Rate: ₹${mentor.rate}/hr</div>
+                    <button class="btn-book" onclick="openBookingModal(${mentor.id})">
+                        Book Session
+                    </button>
+                </div>
+            `).join('');
+        }
+        
+        function openBookingModal(mentorId) {
+            // 1. Find the mentor data
+            selectedMentor = MENTORS_DATA.find(m => m.id === mentorId);
+            selectedSlot = null; // Reset selection
+
+            if (!selectedMentor) return;
+
+            // 2. Populate modal
+            modalTitle.textContent = `Book Session with ${selectedMentor.name}`;
+            scheduleList.innerHTML = selectedMentor.availability.map(slot => `
+                <button 
+                    data-day="${slot.day}" 
+                    data-time="${slot.time}"
+                    class="slot-btn"
+                >
+                    ${slot.day} - ${slot.time}
+                </button>
+            `).join('');
+
+            // 3. Setup event listeners for new buttons
+            document.querySelectorAll('.slot-btn').forEach(button => {
+                button.addEventListener('click', selectSlot);
+            });
+
+            // 4. Reset and Show Modal
+            confirmBtn.disabled = true;
+            modal.style.display = 'block';
+        }
+
+
+        // --- EVENT HANDLERS ---
+        function selectSlot(event) {
+            const button = event.currentTarget;
+            
+            // Deselect all other buttons
+            document.querySelectorAll('.slot-btn').forEach(btn => btn.classList.remove('selected'));
+            
+            // Select the clicked button
+            button.classList.add('selected');
+
+            // Store the selection data
+            selectedSlot = {
+                day: button.getAttribute('data-day'),
+                time: button.getAttribute('data-time')
+            };
+
+            // Enable confirmation button
+            confirmBtn.disabled = false;
+        }
+
+        function redirectToPayment() {
+            if (!selectedMentor || !selectedSlot) {
+                alert('Please select a mentor and a time slot.');
+                return;
+            }
+
+            // Construct the URL with query parameters for the payment page
+            const paymentUrl = `payment.html?mentor=${encodeURIComponent(selectedMentor.name)}&subject=${encodeURIComponent(selectedMentor.specialty)}&price=${selectedMentor.rate}&day=${encodeURIComponent(selectedSlot.day)}&time=${encodeURIComponent(selectedSlot.time)}`;
+            
+            // Redirect the user
+            window.location.href = paymentUrl;
+        }
+
+        // --- INITIALIZATION ---
+        document.addEventListener('DOMContentLoaded', () => {
+            renderMentorCards();
+            
+            // Modal closing listeners
+            closeBtn.onclick = () => { modal.style.display = 'none'; };
+            window.onclick = (event) => {
+                if (event.target == modal) {
+                    modal.style.display = 'none';
+                }
+            };
+
+            // Confirmation button listener
+            confirmBtn.addEventListener('click', redirectToPayment);
+        });
+
+    </script>
+</body>
+</html>

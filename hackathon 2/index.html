@@ -1,0 +1,794 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>COACH X – Your AI Mentor</title>
+    <script>
+        // Load Font Awesome for icons
+        (function() {
+            var link = document.createElement('link');
+            link.rel = 'stylesheet';
+            link.href = 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css';
+            document.head.appendChild(link);
+        })();
+    </script>
+    <style>
+        /* --- CSS STYLES (Consolidated for Simplicity) --- */
+        
+        /* ---------- GLOBAL STYLES ---------- */
+        :root {
+            --bg-main: #0d1117;
+            --bg-chat: #161b22;
+            --accent: #0dcaf0;
+            --text-main: #e6edf3;
+            --text-muted: #8b949e;
+            --user-bubble: #238636;
+            --bot-bubble: #1c2128;
+            --border-color: #30363d;
+            --error-color: #f85149;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: 'Inter', 'Segoe UI', Arial, sans-serif;
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* ---------- HEADER (Like Gemini / ChatGPT bar) ---------- */
+        header {
+            background: rgba(22, 27, 34, 0.9);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 25px;
+            flex-shrink: 0;
+            z-index: 10;
+        }
+
+        header h1 {
+            font-size: 1.3rem;
+            background: linear-gradient(90deg, #0dcaf0, #0078d7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin: 0;
+        }
+
+        header nav a {
+            color: var(--text-muted);
+            text-decoration: none;
+            margin-left: 20px;
+            transition: color 0.2s;
+            font-size: 0.9rem;
+        }
+
+        header nav a:hover, header nav a.active {
+            color: var(--accent);
+        }
+
+        /* ---------- CHAT AREA ---------- */
+        .chat-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start; 
+            padding: 25px;
+            overflow-y: auto;
+            scroll-behavior: smooth;
+        }
+
+        .message {
+            max-width: 80%;
+            margin: 10px 0;
+            padding: 14px 18px;
+            border-radius: 14px;
+            line-height: 1.5;
+            font-size: 1rem;
+            animation: fadeIn 0.3s ease;
+            white-space: pre-wrap;
+        }
+
+        .user-message {
+            background-color: var(--user-bubble);
+            align-self: flex-end;
+            color: #fff;
+            border-top-right-radius: 0;
+        }
+
+        .bot-message {
+            background-color: var(--bot-bubble);
+            border: 1px solid var(--border-color);
+            align-self: flex-start;
+            border-top-left-radius: 0;
+        }
+        
+        #loading-indicator {
+            background-color: #30363d;
+            color: #fff;
+            opacity: 0.7;
+            font-style: italic;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* ---------- INPUT AREA ---------- */
+        .input-area {
+            display: flex;
+            align-items: center;
+            padding: 15px 20px;
+            background-color: var(--bg-chat);
+            border-top: 1px solid var(--border-color);
+            flex-shrink: 0;
+        }
+
+        .input-area input {
+            flex: 1;
+            background-color: var(--bg-main);
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            border-radius: 10px;
+            padding: 12px 16px;
+            font-size: 1rem;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        .input-area input:focus {
+            border-color: var(--accent);
+        }
+
+        .input-area button {
+            background-color: var(--accent);
+            border: none;
+            color: var(--bg-main);
+            font-weight: 600;
+            margin-left: 10px;
+            padding: 12px 20px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        
+        .input-area #mic-btn {
+            background-color: #30363d;
+            color: var(--text-main);
+            padding: 12px 15px;
+            font-size: 1.1rem;
+        }
+        .input-area #mic-btn.listening {
+            background-color: var(--error-color);
+            color: white;
+        }
+
+        .input-area button:hover {
+            background-color: #07a6d0;
+        }
+        .input-area #mic-btn:hover {
+            background-color: #4a5568;
+        }
+
+
+        /* ---------- FOOTER ---------- */
+        footer {
+            text-align: center;
+            font-size: 0.8rem;
+            padding: 10px;
+            color: var(--text-muted);
+            border-top: 1px solid var(--border-color);
+            background-color: var(--bg-chat);
+            flex-shrink: 0;
+        }
+
+        /* ---------- LANDING INTRO ---------- */
+        .intro {
+            text-align: center;
+            margin-bottom: 20px;
+            color: var(--text-muted);
+            padding-top: 20px;
+        }
+
+        .intro strong {
+            color: var(--accent);
+        }
+
+        /* ---------- SHARED MODAL STYLES ---------- */
+        #mentor-modal, #payment-modal {
+            display: none;
+            position: fixed;
+            z-index: 20;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0, 0, 0, 0.9);
+            backdrop-filter: blur(5px);
+        }
+
+        #mentor-modal.active, #payment-modal.active {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .mentor-box { 
+            background-color: var(--bg-chat);
+            padding: 30px;
+            border: 1px solid var(--border-color);
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+            border-radius: 10px;
+            position: relative;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.8);
+        }
+        
+        /* Specific size for Payment modal */
+        #payment-modal .mentor-box {
+            max-width: 450px; 
+        }
+        /* Specific size for Mentor modal */
+        #mentor-modal .mentor-box {
+            max-width: 900px; 
+        }
+
+        .mentor-box h2 {
+            color: var(--accent);
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        .close-btn {
+            color: var(--text-muted);
+            font-size: 28px;
+            font-weight: bold;
+            background: none;
+            border: none;
+            cursor: pointer;
+            position: absolute;
+            top: 10px;
+            right: 20px;
+            transition: color 0.2s;
+        }
+        .close-btn:hover {
+            color: var(--text-main);
+        }
+
+        /* ---------- MENTOR-SPECIFIC STYLES ---------- */
+        #mentor-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+        }
+
+        .mentor-card {
+            background-color: var(--bg-main);
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid #4a5568;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .mentor-card:hover {
+             transform: translateY(-3px);
+             box-shadow: 0 10px 20px rgba(0, 0, 0, 0.4);
+        }
+
+        .mentor-card h3 {
+            color: var(--text-main);
+            font-size: 1.3rem;
+            margin-top: 0;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #4a5568;
+        }
+
+        .mentor-card p {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+            margin-bottom: 10px;
+        }
+        
+        .mentor-card strong {
+            color: var(--text-main);
+        }
+
+        .mentor-card h4 {
+            margin-top: 15px;
+            margin-bottom: 5px;
+            color: var(--accent);
+            font-size: 1rem;
+        }
+
+        .mentor-card ul {
+            list-style-type: none;
+            padding: 0;
+            margin: 5px 0 15px;
+        }
+        .mentor-card li {
+            color: #ccc;
+            margin-bottom: 3px;
+        }
+
+        .book-btn {
+            display: block;
+            width: 100%;
+            padding: 10px;
+            margin-top: 15px;
+            background-color: var(--accent);
+            color: #000;
+            text-align: center;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: bold;
+            transition: background-color 0.2s;
+            cursor: pointer;
+            border: none;
+        }
+        .book-btn:hover {
+            background-color: #07a6d0;
+        }
+        
+        /* ---------- BOOKING MODAL STYLES (The one that appears inside the Mentor Modal) ---------- */
+        #scheduleList {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
+            padding: 15px;
+            border: 1px solid var(--border-color);
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        
+        .slot-btn {
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            border: 1px solid var(--border-color);
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.2s, border-color 0.2s;
+            min-width: 150px;
+            font-size: 0.9rem;
+            text-align: center;
+        }
+        
+        .slot-btn:hover {
+            background-color: #1a2330;
+        }
+
+        .slot-btn.selected {
+            background-color: var(--accent);
+            color: var(--bg-main);
+            border-color: var(--accent);
+            font-weight: bold;
+        }
+        
+        #confirmBookingBtn {
+            width: 100%;
+        }
+        
+        /* ---------- PAYMENT-SPECIFIC STYLES ---------- */
+        #payment-content .form-group {
+            margin-bottom: 15px;
+        }
+        #payment-content label {
+            display: block;
+            margin-bottom: 5px;
+            color: var(--text-main);
+            font-size: 0.9rem;
+        }
+        #payment-content input, #payment-content select {
+            width: 100%;
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid var(--border-color);
+            background-color: var(--bg-main);
+            color: var(--text-main);
+        }
+        #payment-content .input-row {
+            display: flex;
+            gap: 15px;
+        }
+        #payment-content .input-row > div {
+            flex: 1;
+        }
+
+        #payment-status {
+            text-align: center;
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 5px;
+            font-weight: bold;
+            min-height: 20px;
+            transition: all 0.3s ease;
+        }
+        .status-success { 
+            color: #238636; 
+            background-color: rgba(35, 134, 54, 0.2);
+        }
+        .status-error { 
+            color: var(--error-color); 
+            background-color: rgba(248, 81, 73, 0.2);
+        }
+
+
+        @media (max-width: 600px) {
+            header h1 { font-size: 1.1rem; }
+            .chat-container { padding: 10px; }
+            .mentor-box { margin: 5% auto; }
+            header nav a { margin-left: 10px; }
+        }
+
+    </style>
+</head>
+
+<body>
+    <header>
+        <h1>COACH X</h1>
+        <nav>
+            <a href="index.html" class="active">Home</a>
+            <a href="about.html">About</a>
+            <a id="mentors-link">Mentors</a> <a id="payment-link">Payment</a>
+             <a href="feature.html">Features</a>
+            <a href="login.html">Login</a>
+            <a href="WEB_UIKITS.html">Video Call</a>
+        </nav>
+    </header>
+
+    <div class="chat-container" id="chat-container">
+        <div class="intro">
+            <p>👋 Welcome to <strong>COACH X</strong> — Your AI Mentor for career growth and skill development.</p>
+            <p>Ask anything to begin your journey 🚀</p>
+        </div>
+        <div class="bot-message message">
+            Hi there! I’m <strong>Coach X</strong>. I can help you with study guidance, productivity, or personal growth.<br>
+            How would you like to begin?
+        </div>
+    </div>
+
+    <div class="input-area">
+        <input type="text" id="user-input" placeholder="Type your message..." />
+        <button id="send-btn">Send</button>
+        <button id="mic-btn" title="Use Voice Input">🎤</button>
+    </div>
+
+    <footer>
+        <p>&copy; 2025 COACH X. All rights reserved.</p>
+        <p>Mentorship powered by creativity & AI ⚡</p>
+    </footer>
+
+    <div id="mentor-modal">
+        <div class="mentor-box">
+            <button class="close-btn" id="close-mentors">&times;</button>
+            <h2>Our Mentors 👨‍🏫</h2>
+            <div id="mentor-list">
+                <p style="text-align:center; color: var(--text-muted);">Loading mentors from server...</p>
+            </div>
+        </div>
+    </div>
+    
+    <div id="payment-modal">
+        <div class="mentor-box">
+            <button class="close-btn" id="close-payment">&times;</button>
+            <h2>Secure Payment Gateway 💳</h2>
+            <div id="payment-content">
+                </div>
+        </div>
+    </div>
+
+    <script>
+        const input = document.getElementById("user-input");
+        const sendBtn = document.getElementById("send-btn");
+        const micBtn = document.getElementById("mic-btn");
+        const chatContainer = document.getElementById("chat-container");
+        
+        // Mentor Modal Elements
+        const mentorsLink = document.getElementById("mentors-link");
+        const mentorModal = document.getElementById("mentor-modal");
+        const mentorList = document.getElementById("mentor-list");
+        const closeMentorsBtn = document.getElementById("close-mentors");
+
+        // Payment Modal Elements
+        const paymentLink = document.getElementById("payment-link");
+        const paymentModal = document.getElementById("payment-modal");
+        const closePaymentBtn = document.getElementById("close-payment");
+        const paymentContent = document.getElementById("payment-content");
+
+        
+        // Flask API endpoints
+        const API_URL = "http://127.0.0.1:5000/ask";
+        const MENTOR_URL = "http://127.0.0.1:5000/mentors";
+
+        // Global variable to hold fetched mentor data
+        let allMentors = [];
+
+        function addMessage(content, sender) {
+            const msg = document.createElement("div");
+            msg.classList.add("message", sender === "user" ? "user-message" : "bot-message");
+            
+            if (sender === "user") {
+                msg.textContent = content;
+            } else {
+                msg.innerHTML = content;
+            }
+            
+            chatContainer.appendChild(msg);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+
+        function speak(text) {
+            if ('speechSynthesis' in window) {
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.lang = "en-IN";
+                speechSynthesis.speak(utterance);
+            }
+        }
+
+        async function sendMessage(text) {
+            addMessage(text, "user");
+            input.value = "";
+            
+            const loadingMsg = document.createElement("div");
+            loadingMsg.classList.add("message", "bot-message");
+            loadingMsg.id = "loading-indicator";
+            loadingMsg.innerHTML = "Coach X is thinking...";
+            chatContainer.appendChild(loadingMsg);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+
+            try {
+                const res = await fetch(API_URL, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ message: text })
+                });
+                const data = await res.json();
+                
+                const indicator = document.getElementById("loading-indicator");
+                if(indicator) indicator.remove(); 
+                
+                addMessage(data.reply, "bot");
+                speak(data.reply);
+            } catch (err) {
+                const indicator = document.getElementById("loading-indicator");
+                if(indicator) indicator.remove(); 
+                
+                addMessage("⚠️ Error connecting to server. Please ensure the Flask app is running on http://127.0.0.1:5000.", "bot");
+                console.error("Fetch Error:", err);
+            }
+        }
+
+        sendBtn.addEventListener("click", () => {
+            const text = input.value.trim();
+            if (text) sendMessage(text);
+        });
+        input.addEventListener("keypress", e => { if (e.key === "Enter") sendBtn.click(); });
+
+        // Voice input logic (kept for completeness)
+        let recognition;
+        if ("webkitSpeechRecognition" in window) {
+            recognition = new webkitSpeechRecognition();
+            recognition.lang = "en-IN";
+            
+            recognition.onstart = () => { micBtn.classList.add("listening"); };
+            recognition.onend = () => { micBtn.classList.remove("listening"); };
+            recognition.onerror = (event) => { 
+                micBtn.classList.remove("listening"); 
+                if (event.error !== 'no-speech' && event.error !== 'aborted') {
+                    addMessage("🚫 Voice input failed: " + event.error, "bot"); 
+                }
+            };
+
+            recognition.onresult = (event) => {
+                const transcript = event.results[0][0].transcript;
+                sendMessage(transcript);
+            };
+            
+            micBtn.addEventListener("click", () => {
+                if (micBtn.classList.contains("listening")) {
+                    recognition.stop();
+                } else {
+                    recognition.start();
+                }
+            });
+        } else {
+            micBtn.style.display = "none";
+        }
+
+        // ------------------------------------
+        // 🤝 MENTOR MODAL & BOOKING LOGIC (FIXED)
+        // ------------------------------------
+
+        // Function to handle the final redirect after a slot is confirmed
+        function redirectToPayment(mentorName, mentorSubject, day, time, price) {
+            mentorModal.classList.remove("active");
+            
+            // Construct URL with session details
+            const paymentUrl = `payment.html?mentor=${encodeURIComponent(mentorName)}&subject=${encodeURIComponent(mentorSubject)}&price=${price}&day=${encodeURIComponent(day)}&time=${encodeURIComponent(time)}`;
+            
+            // Redirect the user
+            window.location.href = paymentUrl;
+        }
+
+
+        async function fetchMentorsAndRender() {
+            // Check if mentors are already loaded
+            if (allMentors.length > 0) {
+                renderMentors(allMentors);
+                return;
+            }
+
+            mentorList.innerHTML = "<p style='text-align:center; color: var(--text-muted);'>Loading mentors from server...</p>";
+            
+            try {
+                const res = await fetch(MENTOR_URL);
+                if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+                const data = await res.json();
+                allMentors = data; // Store data globally
+                renderMentors(allMentors);
+                
+            } catch (error) {
+                mentorList.innerHTML = `<p style="color: var(--error-color); text-align:center;">⚠️ Failed to load mentors. Please ensure your Flask server is running on ${MENTOR_URL}.</p>`;
+                console.error("Mentor fetch error:", error);
+            }
+        }
+        
+        function renderMentors(mentors) {
+            mentorList.innerHTML = "";
+            
+            mentors.forEach(m => {
+                const card = document.createElement("div");
+                card.className = "mentor-card";
+
+                // Format sessions for display
+                const sessionsHtml = m.sessions.map(s => `
+                    <button 
+                        class="slot-btn" 
+                        onclick="redirectToPayment(
+                            '${m.name}', 
+                            '${m.subject}', 
+                            '${s.day}', 
+                            '${s.time}', 
+                            '${s.price}'
+                        )"
+                    >
+                        ${s.day} @ ${s.time} (₹${s.price})
+                    </button>
+                `).join('');
+
+                card.innerHTML = `
+                    <h3>${m.name} — ${m.subject}</h3>
+                    <p>${m.description}</p>
+                    <p><strong>Contact:</strong> ${m.contact}</p>
+                    
+                    <h4>Available Slots (Click to Book & Pay):</h4>
+                    <div id="scheduleList" style="display: flex; flex-direction: column; gap: 5px;">
+                        ${sessionsHtml}
+                    </div>
+                `;
+                mentorList.appendChild(card);
+            });
+        }
+
+        // ------------------------------------
+        // 💳 PAYMENT MODAL LOGIC (for testing/simplicity)
+        // ------------------------------------
+
+        // 1. Inject Payment Form HTML (Static content)
+        paymentContent.innerHTML = `
+            <div id="session-details-display" style="padding: 10px; background: #1a2330; border-radius: 5px; margin-bottom: 20px; text-align: center;">
+                <p style="margin: 2px 0; color: var(--text-muted);">This is a test payment form.</p>
+                <p style="margin: 2px 0; color: #48e248;">For real booking, please use the Mentors link.</p>
+            </div>
+            <form id="payment-form">
+                <div class="form-group">
+                    <label for="card-number"><i class="fas fa-credit-card"></i> Card Number</label>
+                    <input type="text" id="card-number" placeholder="XXXX XXXX XXXX XXXX" required maxlength="16" />
+                </div>
+                <div class="form-group">
+                    <label for="card-name"><i class="fas fa-user"></i> Name on Card</label>
+                    <input type="text" id="card-name" placeholder="John Doe" required />
+                </div>
+                <div class="input-row">
+                    <div class="form-group">
+                        <label for="expiry"><i class="fas fa-calendar-alt"></i> Expiry (MM/YY)</label>
+                        <input type="text" id="expiry" placeholder="01/26" required maxlength="5" />
+                    </div>
+                    <div class="form-group">
+                        <label for="cvv"><i class="fas fa-lock"></i> CVV</label>
+                        <input type="text" id="cvv" placeholder="123" required maxlength="3" />
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="plan-select"><i class="fas fa-bolt"></i> Select Subscription Plan</label>
+                    <select id="plan-select">
+                        <option value="0">No Subscription Added</option>
+                        <option value="199">Basic Coaching (₹199/month)</option>
+                        <option value="499">Pro Mentorship (₹499/month)</option>
+                        <option value="999">Ultimate Access (₹999/month)</option>
+                    </select>
+                </div>
+                <button type="submit" class="book-btn" id="pay-button">
+                    <i class="fas fa-money-bill-wave"></i> Complete Payment
+                </button>
+                <div id="payment-status"></div>
+            </form>
+        `;
+        
+        // 2. Payment Form Submission (SIMULATED)
+        const paymentForm = document.getElementById("payment-form");
+        const paymentStatus = document.getElementById("payment-status");
+        const payButton = document.getElementById("pay-button");
+
+        paymentForm.addEventListener("submit", (e) => {
+            e.preventDefault();
+            
+            paymentStatus.classList.remove("status-success", "status-error");
+            payButton.disabled = true;
+            paymentStatus.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Processing payment...`;
+
+            setTimeout(() => {
+                payButton.disabled = false;
+                
+                const cardNumber = document.getElementById("card-number").value.replace(/\s/g, '');
+                const planValue = document.getElementById("plan-select").value;
+                
+                if (cardNumber.length === 16 && planValue !== "0") {
+                    paymentStatus.classList.add("status-success");
+                    paymentStatus.innerHTML = `✅ Payment of ₹${planValue} successful! Subscription Activated.`;
+                } else {
+                    paymentStatus.classList.add("status-error");
+                    paymentStatus.innerHTML = `❌ Payment failed. Check card details and ensure a plan is selected.`;
+                }
+            }, 1500);
+        });
+
+
+        // ------------------------------------
+        // 🔄 Event Listeners Initialization
+        // ------------------------------------
+        
+        closeMentorsBtn.addEventListener("click", () => mentorModal.classList.remove("active"));
+        closePaymentBtn.addEventListener("click", () => paymentModal.classList.remove("active"));
+        
+        // Listener to open the Mentor List Modal
+        mentorsLink.addEventListener("click", () => {
+            mentorModal.classList.add("active");
+            fetchMentorsAndRender(); // Fetch and render when the link is clicked
+        });
+
+        // Listener to open the Payment Modal (for testing the form in isolation)
+        paymentLink.addEventListener("click", () => {
+            paymentModal.classList.add("active");
+            document.getElementById("payment-status").textContent = "";
+        });
+
+        // Allow clicking outside the box to close (Mentor)
+        mentorModal.addEventListener('click', (e) => {
+            if (e.target === mentorModal) {
+                mentorModal.classList.remove("active");
+            }
+        });
+        
+        // Allow clicking outside the box to close (Payment)
+        paymentModal.addEventListener('click', (e) => {
+            if (e.target === paymentModal) {
+                paymentModal.classList.remove("active");
+            }
+        });
+    </script>
+</body>
+</html>

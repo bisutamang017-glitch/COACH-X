@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>COACH X – Login</title>
+    <style>
+        /* CSS from your main file - only key styles needed for context */
+        :root {
+            --bg-main: #0d1117;
+            --bg-chat: #161b22;
+            --accent: #0dcaf0;
+            --text-main: #e6edf3;
+            --text-muted: #8b949e;
+            --border-color: #30363d;
+        }
+
+        * { box-sizing: border-box; }
+        
+        body {
+            margin: 0;
+            font-family: 'Inter', 'Segoe UI', Arial, sans-serif;
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        /* HEADER & FOOTER STYLES (Copied from main file for consistency) */
+        header {
+            background: rgba(22, 27, 34, 0.9);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 25px;
+            flex-shrink: 0;
+        }
+
+        header h1 {
+            font-size: 1.3rem;
+            background: linear-gradient(90deg, #0dcaf0, #0078d7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin: 0;
+        }
+
+        header nav a {
+            color: var(--text-muted);
+            text-decoration: none;
+            margin-left: 20px;
+            transition: color 0.2s;
+            font-size: 0.9rem;
+        }
+
+        header nav a:hover, header nav a.active {
+            color: var(--accent);
+        }
+        
+        footer {
+            text-align: center;
+            font-size: 0.8rem;
+            padding: 10px;
+            color: var(--text-muted);
+            border-top: 1px solid var(--border-color);
+            background-color: var(--bg-chat);
+            margin-top: auto;
+        }
+
+        /* ---------- LOGIN SPECIFIC STYLES ---------- */
+        .login-container {
+            flex-grow: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .login-box {
+            background-color: var(--bg-chat);
+            border: 1px solid var(--border-color);
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+        }
+
+        .login-box h2 {
+            color: var(--accent);
+            margin-bottom: 25px;
+            font-size: 2rem;
+        }
+
+        .input-group {
+            margin-bottom: 15px;
+            text-align: left;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: var(--text-main);
+            font-size: 0.9rem;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--border-color);
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            border-radius: 8px;
+            font-size: 1rem;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        .input-group input:focus {
+            border-color: var(--accent);
+        }
+
+        .btn-login {
+            background-color: var(--accent);
+            color: var(--bg-main);
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 20px;
+            transition: background-color 0.2s;
+        }
+
+        .btn-login:hover {
+            background-color: #07a6d0;
+        }
+
+        .toggle-link {
+            display: block;
+            margin-top: 20px;
+            color: var(--accent);
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: color 0.2s;
+        }
+
+        .toggle-link:hover {
+            color: var(--text-main);
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <h1>COACH X</h1>
+        <nav>
+            <a href="index.html">Home</a>
+            <a href="about.html">About</a>
+            <a href="index.html#mentors">Mentors</a>
+            <a href="feature.html">Features</a>
+            <a href="login.html" class="active">Login</a>
+            <a href="WEB_UIKITS.html">Video Call</a>
+            <a id="payment-link">Payment</a>
+        </nav>
+    </header>
+
+    <div class="login-container">
+        <div class="login-box">
+            <h2 id="form-title">Log In</h2>
+            <form id="login-form">
+                <div class="input-group" id="name-group" style="display:none;">
+                    <label for="name">Name</label>
+                    <input type="text" id="name" name="name" required />
+                </div>
+
+                <div class="input-group">
+                    <label for="email">Email</label>
+                    <input type="email" id="email" name="email" required />
+                </div>
+
+                <div class="input-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" name="password" required />
+                </div>
+
+                <button type="submit" class="btn-login" id="submit-btn">Log In</button>
+            </form>
+
+            <a href="#" id="toggle-form" class="toggle-link">Don't have an account? Sign Up</a>
+        </div>
+    </div>
+
+    <footer>
+        <p>&copy; 2025 COACH X. All rights reserved.</p>
+        <p>Mentorship powered by creativity & AI ⚡</p>
+    </footer>
+
+    <script>
+        const form = document.getElementById('login-form');
+        const toggleLink = document.getElementById('toggle-form');
+        const formTitle = document.getElementById('form-title');
+        const nameGroup = document.getElementById('name-group');
+        const submitBtn = document.getElementById('submit-btn');
+        let isLogin = true;
+
+        toggleLink.addEventListener('click', (e) => {
+            e.preventDefault();
+            isLogin = !isLogin;
+            
+            if (isLogin) {
+                formTitle.textContent = 'Log In';
+                submitBtn.textContent = 'Log In';
+                nameGroup.style.display = 'none';
+                toggleLink.textContent = "Don't have an account? Sign Up";
+            } else {
+                formTitle.textContent = 'Sign Up';
+                submitBtn.textContent = 'Sign Up';
+                nameGroup.style.display = 'block';
+                toggleLink.textContent = "Already have an account? Log In";
+            }
+        });
+
+        // The submission logic for your API (FastAPI/etc.) would go here.
+        form.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const action = isLogin ? 'Logging In' : 'Signing Up';
+            alert(`${action} is not yet implemented in the frontend script. Connect this form to your backend API!`);
+            // You would use fetch() here to send data to your actual FastAPI/backend API.
+        });
+    </script>
+</body>
+</html>

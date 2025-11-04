@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>COACH X – Secure Payment</title>
+    <style>
+        :root {
+            --bg-main: #0d1117;
+            --bg-chat: #161b22;
+            --accent: #0dcaf0;
+            --text-main: #e6edf3;
+            --text-muted: #8b949e;
+            --border-color: #30363d;
+        }
+
+        body {
+            margin: 0;
+            font-family: 'Inter', 'Segoe UI', Arial, sans-serif;
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+        
+        header {
+            background: var(--bg-chat);
+            border-bottom: 1px solid var(--border-color);
+            padding: 15px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--accent);
+            text-decoration: none;
+        }
+
+        nav a {
+            color: var(--text-main);
+            text-decoration: none;
+            font-weight: 500;
+            margin-left: 25px;
+            padding: 5px 0;
+            transition: color 0.3s, border-bottom 0.3s;
+            border-bottom: 2px solid transparent;
+        }
+
+        nav a:hover, nav a.active {
+            color: var(--accent);
+            border-bottom: 2px solid var(--accent);
+        }
+
+        main {
+            flex-grow: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 40px 20px;
+        }
+
+        .payment-container {
+            display: flex;
+            max-width: 900px;
+            width: 100%;
+            background-color: var(--bg-chat);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5);
+        }
+
+        .summary-panel, .form-panel {
+            padding: 35px;
+            width: 50%;
+        }
+
+        .summary-panel {
+            background-color: #1a2330;
+            border-right: 1px solid var(--border-color);
+        }
+        
+        .summary-panel h2, .form-panel h2 {
+            color: var(--accent);
+            margin-top: 0;
+            border-bottom: 2px solid var(--accent);
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+            font-size: 1.5rem;
+        }
+
+        .detail-item {
+            margin-bottom: 15px;
+            padding-bottom: 5px;
+            border-bottom: 1px dotted var(--border-color);
+        }
+
+        .detail-item strong {
+            display: block;
+            color: var(--text-main);
+            font-size: 1rem;
+        }
+        
+        .detail-item span {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        .total-price {
+            margin-top: 30px;
+            padding: 15px;
+            background-color: var(--bg-main);
+            border-radius: 8px;
+            text-align: center;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #48e248; /* Green color for price */
+        }
+        
+        /* Payment Form Styles */
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--text-muted);
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+
+        .card-details-group {
+            display: flex;
+            gap: 15px;
+        }
+
+        .card-details-group > div {
+            width: 50%;
+        }
+
+        .btn-pay {
+            width: 100%;
+            padding: 15px;
+            background-color: var(--accent);
+            color: var(--bg-main);
+            font-weight: 700;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1.1rem;
+            transition: background-color 0.3s, transform 0.1s;
+            margin-top: 20px;
+        }
+
+        .btn-pay:hover {
+            background-color: #00b4d8;
+        }
+
+        .btn-pay:active {
+            transform: translateY(1px);
+        }
+
+        .message-box {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: #2e7d32;
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.5);
+            display: none;
+            z-index: 200;
+            text-align: center;
+        }
+
+        /* Responsive */
+        @media (max-width: 900px) {
+            .payment-container {
+                flex-direction: column;
+            }
+            .summary-panel, .form-panel {
+                width: 100%;
+            }
+            .summary-panel {
+                border-right: none;
+                border-bottom: 1px solid var(--border-color);
+            }
+        }
+        @media (max-width: 600px) {
+            header { padding: 15px 20px; flex-direction: column; gap: 10px; }
+            nav { display: flex; flex-direction: column; align-items: center; }
+            nav a { margin: 5px 0; }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <a href="/" class="logo">COACH X</a>
+        <nav>
+            <a href="/">Home (AI Chat)</a>
+            <a href="/feature.html">Features</a>
+            <a href="/mentors.html" class="active">Mentors</a>
+            <a href="/login.html">Login</a>
+        </nav>
+    </header>
+
+    <main>
+        <div class="payment-container">
+            <div class="summary-panel">
+                <h2>Booking Summary</h2>
+                <div id="sessionDetails">
+                    <!-- Details populated by JS -->
+                </div>
+                <div id="totalPrice" class="total-price">
+                    Total: <span id="finalPrice">₹0</span>
+                </div>
+            </div>
+            
+            <div class="form-panel">
+                <h2>Secure Checkout</h2>
+                <form id="paymentForm">
+                    <div class="form-group">
+                        <label for="cardName">Name on Card</label>
+                        <input type="text" id="cardName" required placeholder="John D. Smith">
+                    </div>
+                    <div class="form-group">
+                        <label for="cardNumber">Card Number</label>
+                        <input type="text" id="cardNumber" required placeholder="XXXX XXXX XXXX XXXX" maxlength="19">
+                    </div>
+                    <div class="card-details-group">
+                        <div class="form-group">
+                            <label for="expiryDate">Expiry (MM/YY)</label>
+                            <input type="text" id="expiryDate" required placeholder="01/26" maxlength="5">
+                        </div>
+                        <div class="form-group">
+                            <label for="cvv">CVV</label>
+                            <input type="text" id="cvv" required placeholder="123" maxlength="4">
+                        </div>
+                    </div>
+                    <button type="submit" class="btn-pay">Pay Now</button>
+                </form>
+            </div>
+        </div>
+    </main>
+
+    <!-- Success Message Box -->
+    <div id="successMessage" class="message-box">
+        <h3>✅ Payment Successful!</h3>
+        <p>Your session has been booked. Confirmation will be sent via email.</p>
+        <button onclick="window.location.href='/mentors.html'" style="background: white; color: black; padding: 8px 15px; border: none; border-radius: 5px; cursor: pointer; margin-top: 10px;">
+            Continue
+        </button>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', initializePaymentPage);
+
+        function getQueryParams() {
+            const params = {};
+            new URLSearchParams(window.location.search).forEach((value, key) => {
+                params[key] = value;
+            });
+            return params;
+        }
+
+        function initializePaymentPage() {
+            const params = getQueryParams();
+            const detailsContainer = document.getElementById('sessionDetails');
+            const finalPriceSpan = document.getElementById('finalPrice');
+
+            // Check if essential parameters are missing (in case of direct access)
+            if (!params.mentor || !params.price) {
+                detailsContainer.innerHTML = '<p style="color: red;">Error: Session details are missing. Please book a session from the Mentors page.</p>';
+                return;
+            }
+
+            // Populate booking summary
+            detailsContainer.innerHTML = `
+                <div class="detail-item">
+                    <strong>Mentor:</strong>
+                    <span>${params.mentor} (${params.subject || 'N/A'})</span>
+                </div>
+                <div class="detail-item">
+                    <strong>Date & Time:</strong>
+                    <span>${params.day}, ${params.time}</span>
+                </div>
+                <div class="detail-item">
+                    <strong>Booking ID:</strong>
+                    <span>#${Math.floor(Math.random() * 900000 + 100000)}</span>
+                </div>
+            `;
+            
+            finalPriceSpan.textContent = `₹${params.price}`;
+            
+            // Set up form submission handler
+            document.getElementById('paymentForm').addEventListener('submit', handlePayment);
+        }
+
+        function handlePayment(event) {
+            event.preventDefault(); // Prevent default form submission
+
+            // --- Mock Payment Logic ---
+            // In a real application, this would send data to a secure payment gateway (Stripe, Razorpay, etc.)
+            
+            // Basic validation (can be more complex)
+            const cardNumber = document.getElementById('cardNumber').value.replace(/\s/g, '');
+            if (cardNumber.length < 16) {
+                // Use a custom message box instead of alert()
+                showTemporaryMessage('Please enter a valid card number.', 'red');
+                return;
+            }
+            
+            // Simulate processing delay
+            const payButton = document.querySelector('.btn-pay');
+            const originalText = payButton.textContent;
+            payButton.textContent = 'Processing...';
+            payButton.disabled = true;
+
+            setTimeout(() => {
+                // Simulate success
+                document.getElementById('successMessage').style.display = 'block';
+                payButton.textContent = originalText;
+                payButton.disabled = false;
+                document.getElementById('paymentForm').reset();
+            }, 2000); // 2 second mock delay
+        }
+
+        function showTemporaryMessage(message, color) {
+            const msg = document.createElement('div');
+            msg.className = 'message-box';
+            msg.style.backgroundColor = color;
+            msg.innerHTML = `<p>${message}</p>`;
+            msg.style.display = 'block';
+            document.body.appendChild(msg);
+
+            setTimeout(() => {
+                msg.remove();
+            }, 3000);
+        }
+    </script>
+</body>
+</html>

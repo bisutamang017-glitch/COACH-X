@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>COACH X – Features</title>
+    <style>
+        /* Re-include only the necessary global/layout styles for standalone page */
+        :root {
+            --bg-main: #0d1117;
+            --bg-chat: #161b22;
+            --accent: #0dcaf0;
+            --text-main: #e6edf3;
+            --text-muted: #8b949e;
+            --border-color: #30363d;
+        }
+
+        * { box-sizing: border-box; }
+        
+        body {
+            margin: 0;
+            font-family: 'Inter', 'Segoe UI', Arial, sans-serif;
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        /* HEADER STYLES (Copied from main file) */
+        header {
+            background: rgba(22, 27, 34, 0.9);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 25px;
+            flex-shrink: 0;
+        }
+
+        header h1 {
+            font-size: 1.3rem;
+            background: linear-gradient(90deg, #0dcaf0, #0078d7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin: 0;
+        }
+
+        header nav a {
+            color: var(--text-muted);
+            text-decoration: none;
+            margin-left: 20px;
+            transition: color 0.2s;
+            font-size: 0.9rem;
+        }
+
+        header nav a:hover, header nav a.active {
+            color: var(--accent);
+        }
+        
+        /* FOOTER STYLES (Copied from main file) */
+        footer {
+            text-align: center;
+            font-size: 0.8rem;
+            padding: 10px;
+            color: var(--text-muted);
+            border-top: 1px solid var(--border-color);
+            background-color: var(--bg-chat);
+            margin-top: auto; /* Push footer to bottom */
+        }
+
+        /* ---------- FEATURES SECTION STYLES ---------- */
+        .features-section {
+            flex-grow: 1; /* Allow section to take up space */
+            padding: 50px 25px;
+            background-color: var(--bg-chat);
+            max-width: 1200px;
+            width: 100%;
+            margin: 30px auto;
+            border-radius: 10px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.5);
+            border: 1px solid var(--border-color);
+        }
+
+        .features-section h2 {
+            font-size: 2.5rem;
+            color: var(--accent);
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+        }
+
+        .feature-card {
+            background-color: var(--bg-main);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 25px;
+            text-align: left;
+            transition: transform 0.2s;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .feature-card h3 {
+            color: var(--text-main);
+            font-size: 1.4rem;
+            margin-top: 0;
+            display: flex;
+            align-items: center;
+        }
+
+        .feature-card h3 span {
+            font-size: 1.8rem;
+            margin-right: 15px;
+            color: var(--accent);
+        }
+
+        .feature-card p {
+            color: var(--text-muted);
+            font-size: 1rem;
+        }
+        
+        .back-link {
+            display: block;
+            text-align: center;
+            margin-top: 40px;
+            color: var(--accent);
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+        .back-link:hover {
+            text-decoration: underline;
+        }
+        
+        @media (max-width: 600px) {
+            .features-section { padding: 30px 15px; margin: 15px auto; }
+            .features-section h2 { font-size: 2rem; }
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <h1>COACH X</h1>
+        <nav>
+            <a href="index.html">Home</a>
+            <a href="about.html">About</a>
+            <a href="mentors.html">Mentors</a>
+            <a href="login.html">Login</a>
+            <a href="WEB_UIKITS.html">Video Call</a>
+            <a href="payment.html">Payment</a>
+
+        </nav>
+    </header>
+
+    <div class="features-section">
+        <h2>COACH X Core Features ✨</h2>
+        <div class="feature-grid">
+            <div class="feature-card">
+                <h3><span>🧠</span> Multimodal Analysis</h3>
+                <p>Upload your question queries and even voice recordings of mock interviews. COACH X will ingest and analyze all content to provide context-aware, grounded career advice.</p>
+            </div>
+            
+            <div class="feature-card">
+                <h3><span>🎯</span> Skill-Gap Mapping</h3>
+                <p>Our AI assesses your current aptitudes, skills, and experience, then maps them against current industry demands to identify your personalized skill gaps and suggest targeted learning paths for progression.</p>
+            </div>
+
+            <div class="feature-card">
+                <h3><span>📅</span> Automated Mentor Connect</h3>
+                <p>Seamlessly browse a directory of vetted industry mentors and instantly book one-on-one sessions through an integrated calendar system, ensuring efficient connection for all your queries and concerns.</p>
+            </div>
+
+            <div class="feature-card">
+                <h3><span>💡</span> Contextual Study Guidance</h3>
+                <p>Get real-time study guidance, personalized task breakdowns, and productivity schedules based on your specific career goals and learning speed, acting as your 24/7 personal learning assistant.</p>
+            </div>
+        </div>
+        
+        <a href="index.html" class="back-link">← Return to Chat</a>
+    </div>
+
+    <footer>
+        <p>&copy; 2025 COACH X. All rights reserved.</p>
+        <p>Mentorship powered by creativity & AI ⚡</p>
+    </footer>
+</body>
+</html>
